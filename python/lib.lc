@@ -1,0 +1,30 @@
+#booleans
+true  := x,y => x
+false := x,y => y
+
+#boolean operations
+not := x => x false true
+
+and  := x,y => x y false
+or   := x,y => x true y
+xor  := x,y => x (y false true) (y true false)
+
+bool_eq  := x,y => not (xor x y)
+
+#unaray ints
+zero := x,y => y
+succ := x,y,z => y (x y z) 
+# notice succ (zero) m n applies m once to n 
+# and succ (succ zero) m n applies m twice to n
+add := x,y   => x succ y
+mul := x,y,z => x y z 
+
+#some numbers
+one = succ zero
+two = succ one
+three = succ two
+
+
+#branching and loops
+if  := cond,then,else => cond then else
+
