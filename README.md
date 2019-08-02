@@ -4,21 +4,21 @@ Lambda-Calculus interpreter in python and cpp.
 ## python
 The python implementation can be used via `python/main.py [-i] example.lc`.
 The -i option opens a console after running the script allowing you interact with the runtime.
-##Syntax
+## Syntax
 ```
 # a comment...
 # identity function
 x => x
 # a simple definition
 first := x, y => x
-# another representation
+# the same expression using the binding operator $
 first = x $ y $ x
 ```
 You might notice that `$`,`=>` and `,` all essentially do the same thing;
 they bind the left variable to the right expression.
-##Example
+## Example
 ```
-# true and false can be implemented as functions that decide between two elements
+# true and false can be implemented as functions that decide between two arguments
 true  := x,y => x
 false := x,y => y
 or    := x,y => x true y
