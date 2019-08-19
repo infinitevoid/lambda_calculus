@@ -4,12 +4,6 @@
 using string = std::string;
 using channel  = std::ostringstream;
 
-class Node
-{
-    public:
-        virtual Node* Copy();
-        virtual void Debug(channel &stream, int ind);
-};
 
 // utility function for debugging
 void tabs(channel &str, int ind)
@@ -17,15 +11,24 @@ void tabs(channel &str, int ind)
     for(int i = 0; i < ind; i++) str << '\t';
 }
 
-// placeholder variable
+class Node
+{
+    public:
+        virtual Node* Copy(){ return new Node();};
+        virtual void Debug(channel &stream, int ind){
+            tabs(stream, ind);
+            stream << "NODE\n";
+        };
+};
+
 class Link: public Node
 {
     private:
         bool Global;
         Node* Fill = nullptr;
     public:
-        const int Id;
-        Link(int id, bool glob): Id(id), Global(glob){}
+        const string Name;
+        Link(string name, bool glob): Name(name), Global(glob){}
         void Set(Node * val){Fill = val;}
         Node* Copy()
         {
@@ -36,7 +39,7 @@ class Link: public Node
         void Debug(channel &str, int ind)
         {
             tabs(str, ind);
-            str << "LINK " << Id << "\n";
+            str << "LINK " << Name << "\n";
             if(Fill != nullptr) Fill->Debug(str, ind+1);
         }
 };
@@ -58,7 +61,7 @@ class Bind: public Node
         Node* Copy()
         {
             //Copies++;
-            Link* nl = new Link(Placeholder->Id, false);
+            Link* nl = new Link(Placeholder->Name, false);
             Placeholder->Set(nl);
             Bind* nb = new Bind(nl, Expr->Copy());
             Placeholder->Set(nullptr);
@@ -100,11 +103,4 @@ class Call: public Node
             str << "CALL\n";
             Arg->Debug(str, ind+1);
         }
-};
-
-class Definition 
-{   
-    string Id;
-    Node* Expr;
-    bool Function; 
 };
