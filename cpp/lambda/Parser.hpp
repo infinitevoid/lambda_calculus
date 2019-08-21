@@ -5,14 +5,13 @@
 #include <iostream>
 
 
-auto &cout = std::cout;
 using Scope = std::unordered_map<string, Node*>;
 
 
 struct Stmt 
 {   
-    string Id;
-    Node* Expr;
+    string Id = "";
+    Node* Expr = nullptr;
 };
 
 class Parser: public Lexer
@@ -23,21 +22,22 @@ class Parser: public Lexer
         string LastString = "";
 
     public:
+        channel Warnings;
 
         Primary MatchPrimary(Scope scope)
         {
-            cout << "Pirmary\n";
+            //cout << "Pirmary\n";
             Token tok = NextToken();
             switch(tok.Type)
             {
                 case TokenType::BIND: {return Primary::BIND;}
                 case TokenType::OPEN: {
-                    cout << "(\n";
+                    //cout << "(\n";
                     Node* node = ParseExpr(nullptr, scope);
                     if(Current.Type != TokenType::CLOSE){
                         TokenError(Current);
                     }
-                    cout << ")\n";
+                    //cout << ")\n";
                     LastNode = node;
                     return Primary::NODE;}
                 case TokenType::ID: {
@@ -56,11 +56,11 @@ class Parser: public Lexer
         }
         Node* ParseExpr(Node* left, Scope scope)
         {
-            cout << "Node\n" << std::endl;
+            //cout << "Node\n" << std::endl;
             Primary mode = MatchPrimary(scope);
             if(left == nullptr)
             {
-                cout << "left nullptr\n";
+                //cout << "left nullptr\n";
                 if(mode == Primary::ID)
                     return ParseExpr(LastString, scope);
                 else if(mode == Primary::NODE)
@@ -69,7 +69,7 @@ class Parser: public Lexer
             }
             else
             {
-                cout << "switch\n";
+                //cout << "switch\n";
                 switch(mode){
                     case(Primary::NIL):
                         return left;
@@ -84,25 +84,26 @@ class Parser: public Lexer
         }
         Node* ParseExpr(string left, Scope scope)
         {
-            cout << "String\n";
+            //cout << "String\n";
             Primary mode = MatchPrimary(scope);
             if(mode == Primary::BIND){
-                cout << "String->Bind\n";
+                //cout << "String->Bind\n";
                 //TODO assert that last primary was string?!
                 //TODO check if new symbol overwrites anything in the scope tabel
                 // if so => warn the user...
                 Link* link = new Link(left, false);
                 Scope new_scope(scope.begin(), scope.end());
+                CheckSymbol(left, scope);
                 new_scope[left] = link;
                 return new Bind(link, ParseExpr(nullptr, new_scope));
             }
             else if(mode == Primary::NIL){
-                cout << "String->NIL\n";
+                //cout << "String->NIL\n";
                 ExpectSymbol(left, scope);
                 return scope[left];
             }
             else{
-                cout << "String->ELSE\n";
+                //cout << "String->ELSE\n";
                 ExpectSymbol(left, scope);
                 Node* node = scope[left];
                 if(mode == Primary::ID){
@@ -115,6 +116,7 @@ class Parser: public Lexer
         }
         Stmt ParseLine(Scope scope)
         {
+            //std::cout << "Hello there!" << std::endl;
             Stmt stmt;
             Token tok = NextToken();
             if(tok.Type == TokenType::ID)
@@ -132,6 +134,8 @@ class Parser: public Lexer
                     Node* expr;
                     if(op.Type == TokenType::EQUAL){
                         expr = ParseExpr(nullptr, scope);
+                        //NextToken();
+                        Skip(TokenType::CLOSE);
                         ExpectToken(Current, TokenType::EOL);
                         stmt.Id = tok.Cargo;
                         stmt.Expr = expr;
@@ -139,6 +143,8 @@ class Parser: public Lexer
                     }
                     PartialReset();
                     expr = ParseExpr(nullptr, scope);
+                    //NextToken();
+                    Skip(TokenType::CLOSE);
                     ExpectToken(Current, TokenType::EOL);
                     stmt.Expr = expr;
                     return stmt;
@@ -150,20 +156,34 @@ class Parser: public Lexer
         void TokenError(Token tok)
         {
             channel stream;
-            stream << "Unexpected token '" << tok.Stringify() << "' at line " << Line << " char " << Char << " in file " << File;
+            stream << "Unexpected token '" << tok.Stringify() << "' ";
+            PrintPosition(stream);
             throw stream.str();
         }
         void ExpectSymbol(string sym, Scope scope){
             if(scope.count(sym) == 1) return;
             channel stream;
-            stream << "Undefined symbol '" << sym << "' at line " << Line << " char " << Char << " in file " << File;
+            stream << "Undefined symbol '" << sym << "' ";
+            PrintPosition(stream); 
             throw stream.str();
         }
         void ExpectToken(Token tok, TokenType type){
             if(tok.Type == type) return;
             channel stream;
             Token dummy = {type};
-            stream << "Expected '" << dummy.Stringify()  << "' but got'" << tok.Stringify() << "' at line " << Line << " char " << Char << " in file " << File;
+            stream << "Expected '" << dummy.Stringify()  << "' but got'" << tok.Stringify() << "' ";
+            PrintPosition(stream);
             throw stream.str();
+        }
+        void CheckSymbol(string sym, Scope scope)
+        {
+            if(scope.count(sym) > 0 ){
+                Warnings << "Warning: " << sym << " overwrites local bound or global variabel ";
+                PrintPosition(Warnings); Warnings << "\n";
+            }
+        }
+        void Skip(TokenType skip)
+        {
+            if(Current.Type == skip) NextToken();
         }
 };

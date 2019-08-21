@@ -1,6 +1,8 @@
 # lambda_calculus
 Lambda-Calculus interpreter in python and cpp.
 
+## c++
+nearly completed, just need to beautify the output...
 ## python
 The python implementation can be used via `python/main.py [-i] example.lc`.
 The -i option opens a console after running the script allowing you interact with the runtime.

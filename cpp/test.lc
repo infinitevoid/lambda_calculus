@@ -1,0 +1,11 @@
+true = a,b => a
+#asfdjasfkdljasl
+false = x,y $ (y)
+and = x, y => x y false
+or = x,y => x true y
+and true false
+or true false
+or false false
+atom 1
+inc = a => 1 a
+inc 1

@@ -2,10 +2,12 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <sstream>
+#include <iostream>
 
 template<class T>
-using uset = std::unordered_set<T>;
-using string  = std::string;
+using uset     = std::unordered_set<T>;
+using string   = std::string;
+using channel  = std::ostringstream;
 
 enum TokenType
 {
@@ -104,12 +106,16 @@ class Lexer
         }
         void Error(char ch){
             std::ostringstream s;
-            s << "Unexpected character '" << ch << "' at line " << Line << " char " << Char << " in file "<< File;
+            s << "Unexpected character '" << ch << "' ";
+            PrintPosition(s);
             throw s.str();
+        }
+        void PrintPosition(channel &ch){
+            ch << "at line " << Line << " char " << Char << " in file " << File;
         }
         string Match(const uset<char> set){
             string matched = "";
-            while(!EOL && (set.count(GetChar()) == 1)) matched += GetChar();
+            while(!EOL && (set.count(GetChar()) == 1)){matched += GetChar();Next();}
             return matched;
         }
         void PartialReset() { Index = 0; EOL  = Text.size() == Index; }
