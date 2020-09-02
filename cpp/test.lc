@@ -9,3 +9,4 @@ or false false
 atom 1
 inc = a => 1 a
 inc 1
+rep = x => x x
