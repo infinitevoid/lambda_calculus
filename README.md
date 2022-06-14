@@ -11,8 +11,8 @@ The -i option opens a console after running the script allowing you interact wit
 # a comment...
 # identity function
 x => x
-# a simple definition
-first := x, y => x
+# a simple function (always returns first parameter)
+first := x,y => x
 # the same expression using the binding operator $
 first = x $ y $ x
 ```
